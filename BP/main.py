@@ -1,11 +1,12 @@
 import torch
 from AutoencoderSaverLoader import AutoencoderSaverLoader
+from CalculateThreshold import MSEThreshold, SSIMThreshold
 from Train import train_model
 from AutoEncoder import AutoEncoder
 from Test import test
 from DataLoader import train_data,test_good_data,test_NOK_data,example
 from compare import compare
-from test2 import test2
+from test2 import acc, test2
 
 
 def train():
@@ -38,8 +39,7 @@ def test_model():
     saver_loader.load_model()
     autoencoder = saver_loader.model
     
-    test(model=autoencoder,device = device, test_loader = test_good_data())
-    test(model=autoencoder,device = device, test_loader = test_NOK_data())
+    test(model=autoencoder,device = device, test_loader = train_data())
 
 
 def compare_images():
@@ -49,7 +49,7 @@ def compare_images():
     saver_loader = AutoencoderSaverLoader(model=autoencoder)
     saver_loader.load_model()
     autoencoder = saver_loader.model
-    compare(autoencoder,test_NOK_data(),device)
+    compare(autoencoder,test_good_data(),device)
 
 def test_accuracy():
     device = "cuda" if torch.cuda.is_available() else "cpu"
@@ -58,10 +58,46 @@ def test_accuracy():
     saver_loader = AutoencoderSaverLoader(model=autoencoder)
     saver_loader.load_model()
     autoencoder = saver_loader.model
-    test2(autoencoder,device,test_NOK_data(),"NOK",0.0009)
+    
+    acc(autoencoder,device,test_good_data(),"good",0.85)
+    acc(autoencoder,device,test_NOK_data(),"NOK",0.85)
+    
+def calculateMSEThreshold():
+    # Setup device-agnostic code
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(device)
+    torch.cuda.empty_cache()
+
+    autoencoder = AutoEncoder()
+    # Load the model
+    saver_loader = AutoencoderSaverLoader(model=autoencoder)
+    saver_loader.load_model()
+    autoencoder = saver_loader.model
+    
+    MSEThreshold(model=autoencoder,device = device, test_loader = train_data())
+
+
+
+def calculateSSIMThreshold():
+    # Setup device-agnostic code
+    device = "cuda" if torch.cuda.is_available() else "cpu"
+    print(device)
+    torch.cuda.empty_cache()
+
+    autoencoder = AutoEncoder()
+    # Load the model
+    saver_loader = AutoencoderSaverLoader(model=autoencoder)
+    saver_loader.load_model()
+    autoencoder = saver_loader.model
+    
+    SSIMThreshold(model=autoencoder,device = device, test_loader = train_data())
+
+
 
 
 #train()
 #test_model()
 compare_images()
 #test_accuracy()
+#calculateMSEThreshold()
+#calculateSSIMThreshold()
